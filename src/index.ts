@@ -25,6 +25,7 @@ app.use(cors({
 
 // Environment variables
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-exp';
 const PORT = process.env.PORT || 3001;
 
 // Warn if token is missing
@@ -149,16 +150,17 @@ app.post('/mcp', async (req, res) => {
             };
           }
 
-          console.log(`[Gemini] Analyzing image (${imageSizeMB.toFixed(2)}MB, ${mimeType})${crop ? ` for ${crop}` : ''}`);
+          console.log(`[AI Vision] Analyzing image (${imageSizeMB.toFixed(2)}MB, ${mimeType})${crop ? ` for ${crop}` : ''}`);
+          console.log(`[AI Vision] Using model: ${GEMINI_IMAGE_MODEL}`);
 
           // Initialize Gemini model
           const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash-exp',
+            model: GEMINI_IMAGE_MODEL,
             generationConfig: {
               temperature: 0.4,
               topP: 0.95,
               topK: 40,
-              maxOutputTokens: 1024,
+              maxOutputTokens: 2048, // Increased for detailed diagnostic reports
             }
           });
 
@@ -224,7 +226,7 @@ IMPORTANT RULES:
           const response = result.response;
           const diagnosis = response.text();
 
-          console.log('[Gemini] Diagnosis completed successfully');
+          console.log('[AI Vision] Diagnosis completed successfully');
 
           return {
             content: [{
