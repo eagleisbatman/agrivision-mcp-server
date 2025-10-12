@@ -1,7 +1,7 @@
 {
-  "name": "gap-plant-diagnosis-mcp",
+  "name": "agrivision-mcp-server",
   "version": "1.0.0",
-  "description": "MCP server for plant disease diagnosis using Gemini 2.5 Flash vision model",
+  "description": "AI-powered plant disease and health diagnosis MCP server. Supports multiple vision models including Google Gemini 2.5 Flash for accurate crop disease detection, pest identification, and nutrient deficiency analysis.",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
@@ -9,9 +9,13 @@
     "build": "tsc",
     "start": "node dist/index.js"
   },
-  "keywords": ["mcp", "plant-diagnosis", "gemini", "agriculture"],
+  "keywords": ["mcp", "plant-diagnosis", "crop-disease", "agriculture", "ai-vision", "gemini", "pest-detection", "crop-health"],
   "author": "Digital Green Foundation",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eagleisbatman/agrivision-mcp-server.git"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "@modelcontextprotocol/sdk": "^1.0.4",

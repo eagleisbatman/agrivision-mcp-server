@@ -1,336 +1,193 @@
-# GAP Plant Diagnosis MCP Server
+# AgriVision MCP Server
 
-**Plant disease diagnosis using Google Gemini 2.5 Flash vision model via Model Context Protocol (MCP).**
+**AI-Powered Plant Disease & Health Diagnosis via Model Context Protocol**
 
-## Overview
+AgriVision is a region-agnostic plant health diagnosis service providing structured diagnostic data through MCP. Uses Google Gemini 2.5 Flash for accurate crop disease detection, pest identification, and nutrient deficiency analysis.
 
-This MCP server provides AI-powered plant disease diagnosis for East African farmers. It uses Google's Gemini 2.5 Flash vision model to analyze plant images and identify:
+[![Model](https://img.shields.io/badge/Model-Gemini%202.5%20Flash-blue)](https://ai.google.dev/gemini-api/docs/models/gemini)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/Node-%3E%3D18.0.0-brightgreen)](https://nodejs.org)
 
-- Plant species (if not specified)
-- Diseases and symptoms
-- Pest infestations
-- Nutrient deficiencies
-- Treatment recommendations
+---
 
-## Features
+## 🌟 Features
 
-- 🌿 **AI-Powered Diagnosis**: Uses Gemini 2.5 Flash for accurate plant health analysis
-- 🌾 **22 Supported Crops**: All major East African crops supported
-- 📸 **Image Analysis**: Base64 image input (JPEG, PNG, WebP, max 5MB)
-- 🔬 **Comprehensive Reports**: Species ID, health assessment, diagnosis, treatment recommendations
-- 🌍 **East Africa Focus**: Treatments and advice tailored for local farming conditions
-- 🚀 **MCP Protocol**: Integrates with OpenAI Agent Builder workflows
+- **AI Vision Analysis**: Powered by Google Gemini 2.5 Flash (configurable)
+- **23 Supported Crops**: Cereals, legumes, vegetables, cash crops
+- **Disease Detection**: Fungal, bacterial, viral with scientific names
+- **Pest Identification**: Insects, mites, infestations
+- **Nutrient Analysis**: Deficiency detection
+- **Growth Stage Assessment**: Seedling to senescent
+- **Configurable Modes**: Diagnosis-only or full advisory
+- **Structured Output**: JSON or formatted text
+- **Region-Agnostic**: Adaptable to any geography
 
-## Supported Crops
+---
 
-**Cereals & Grains:** maize, wheat, rice, sorghum, millet
-**Legumes:** beans, cowpea, pigeon_pea, groundnut
-**Root Crops:** cassava, sweet_potato, potato
-**Vegetables:** tomato, cabbage, kale, onion, vegetables (general)
-**Cash Crops:** tea, coffee, sugarcane, banana, sunflower, cotton
+## 🤖 AI Model: Google Gemini 2.5 Flash
 
-## Installation
+| Aspect | Details |
+|--------|---------|
+| Provider | Google AI |
+| Model | gemini-2.5-flash-image-preview |
+| Specialization | Vision + Language |
+| Strengths | Fast, accurate on plant images |
+| Output Tokens | Up to 2048 |
+
+**Alternative Models**: gemini-2.0-flash-exp, gemini-1.5-pro, gemini-1.5-flash
+Configure via `GEMINI_IMAGE_MODEL` environment variable.
+
+---
+
+## 🚀 Quick Start
 
 ```bash
-# Clone repository
-git clone <repository-url>
-cd gap-plant-diagnosis-mcp
-
-# Install dependencies
+git clone https://github.com/eagleisbatman/agrivision-mcp-server.git
+cd agrivision-mcp-server
 npm install
-
-# Create .env file
 cp .env.example .env
-
-# Add your Gemini API key to .env
-GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file:
-
-```bash
-# Google AI (Gemini) API Key (required)
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Server Configuration
-PORT=3001
-NODE_ENV=development
-
-# CORS Configuration
-ALLOWED_ORIGINS=*
-```
-
-### Getting a Gemini API Key
-
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Create a new API key
-4. Copy the key to your `.env` file
-
-## Usage
-
-### Development
-
-```bash
+# Add your GEMINI_API_KEY to .env
 npm run dev
 ```
 
-Server starts on http://localhost:3001
+Get API Key: https://makersuite.google.com/app/apikey
 
-### Production
+---
 
+## ⚙️ Configuration
+
+### Required
 ```bash
-npm run build
-npm start
+GEMINI_API_KEY=your_key_here
 ```
 
-### Testing
-
+### Advisory Mode (Important!)
 ```bash
-# Health check
-curl http://localhost:3001/health
-
-# Server info
-curl http://localhost:3001/
+ADVISORY_MODE=diagnosis_only  # or "full_advisory"
 ```
 
-## MCP Tool: diagnose_plant_disease
+- **diagnosis_only** (default): Returns diagnostic data only. Client agent generates region-specific treatment.
+- **full_advisory**: Returns diagnosis + AI treatment recommendations.
 
-### Parameters
-
-- **image** (required): Base64-encoded plant image
-  - Format: `data:image/jpeg;base64,/9j/4AAQ...`
-  - Supported formats: JPEG, PNG, WebP
-  - Max size: 5MB
-
-- **crop** (optional): Crop type for better accuracy
-  - Examples: `maize`, `tomato`, `coffee`
-  - See supported crops list above
-
-### Response Format
-
-```
-🌱 Plant Identification:
-[Species identification and confirmation]
-
-🔍 Health Assessment:
-- Overall plant health: [Healthy/Mild/Moderate/Severe]
-- Confidence level: [High/Medium/Low]
-
-⚠️ Diagnosis:
-[Detected diseases, pests, or issues with details]
-
-💊 Treatment Recommendations:
-1. [Immediate action]
-2. [Short-term treatment]
-3. [Preventive measures]
-4. [When to seek expert help]
-
-🌾 Farmer-Friendly Summary:
-[Simple explanation and action steps]
-```
-
-### Example Usage in Agent Builder
-
-When integrated with OpenAI Agent Builder, the LLM can call this tool:
-
-```typescript
-diagnose_plant_disease({
-  image: "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
-  crop: "maize"
-})
-```
-
-The response will be formatted for farmers in simple, actionable language.
-
-## Integration with FarmerChat
-
-### 1. Deploy to Railway (or similar platform)
-
+### Output Format
 ```bash
-# Deploy to Railway
-railway login
-railway link
-railway up
+OUTPUT_FORMAT=structured  # or "text"
 ```
 
-### 2. Add to OpenAI Agent Builder
+- **structured** (default): JSON with typed fields
+- **text**: Formatted text with emojis
 
-1. Go to platform.openai.com
-2. Navigate to your FarmerChat workflow
-3. Add new MCP connection:
-   - Name: Plant Diagnosis
-   - URL: https://your-deployment-url/mcp
-   - Type: StreamableHTTP
-4. Save workflow
-
-### 3. Update System Prompt
-
-Add to SYSTEM_PROMPT.md:
-
-```markdown
-## Image-Based Plant Diagnosis
-
-When users share plant images, use the `diagnose_plant_disease` tool to:
-- Identify plant species (if unknown)
-- Detect diseases, pests, nutrient deficiencies
-- Provide treatment recommendations
-
-Instructions:
-- Request image upload when users mention plant health issues
-- Always pass crop type if known for better accuracy
-- Present diagnosis in simple, farmer-friendly language
-- Focus on locally available, affordable treatments
+### Model Selection
+```bash
+GEMINI_IMAGE_MODEL=gemini-2.5-flash-image-preview
 ```
 
-## API Endpoints
+---
+
+## 🔌 API Endpoints
 
 ### GET /health
-
-Health check endpoint.
-
-**Response:**
 ```json
 {
   "status": "healthy",
-  "service": "gap-plant-diagnosis-mcp",
-  "geminiConfigured": true,
-  "supportedCrops": 22,
-  "version": "1.0.0",
-  "timestamp": "2025-10-11T..."
+  "model": "gemini-2.5-flash-image-preview",
+  "advisoryMode": "diagnosis_only",
+  "supportedCrops": 23
 }
 ```
-
-### GET /
-
-Server information and capabilities.
 
 ### POST /mcp
-
 MCP protocol endpoint for tool calls.
 
-## Project Structure
+---
 
-```
-gap-plant-diagnosis-mcp/
-├── src/
-│   └── index.ts           # Main server with MCP tool implementation
-├── dist/                  # Compiled JavaScript (generated)
-├── package.json           # Dependencies and scripts
-├── tsconfig.json          # TypeScript configuration
-├── .env.example           # Environment variables template
-├── .gitignore            # Git ignore rules
-└── README.md             # This file
-```
+## 🛠️ MCP Tool: diagnose_plant_disease
 
-## Error Handling
+### Parameters
+- `image` (required): Base64-encoded image (`data:image/jpeg;base64,...`)
+- `crop` (optional): Expected crop type (e.g., `maize`, `tomato`)
 
-The tool handles various error scenarios:
+### Supported Crops (23)
+Cereals: maize, wheat, rice, sorghum, millet
+Legumes: beans, cowpea, pigeon_pea, groundnut
+Roots: cassava, sweet_potato, potato
+Vegetables: tomato, cabbage, kale, onion
+Cash Crops: tea, coffee, sugarcane, banana, sunflower, cotton
 
-- **No API key**: Returns configuration error
-- **Invalid image format**: Requests valid JPEG/PNG/WebP
-- **Image too large**: Requests smaller image (< 5MB)
-- **API quota exceeded**: Informs user of temporary unavailability
-- **Unclear image**: Requests clearer image showing plant
-- **Non-plant image**: Indicates image doesn't show a plant
-
-All errors are returned in farmer-friendly language.
-
-## Deployment
-
-### Railway Deployment
-
-1. Create `railway.json`:
-
+### Response (diagnosis_only + structured)
 ```json
 {
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "npm start",
-    "healthcheckPath": "/health",
-    "healthcheckTimeout": 300,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 3
-  }
+  "crop": {"name": "Maize", "scientific_name": "Zea mays", "confidence": "High"},
+  "health_status": {"overall": "Moderate Issue", "confidence": "High"},
+  "issues": [{
+    "name": "Fall Armyworm",
+    "scientific_name": "Spodoptera frugiperda",
+    "category": "Pest",
+    "severity": "Moderate",
+    "symptoms": ["Irregular holes", "Frass visible"]
+  }],
+  "growth_stage": "Vegetative"
 }
 ```
 
-2. Set environment variables in Railway dashboard:
-   - `GEMINI_API_KEY`
-   - `PORT` (Railway sets automatically)
-   - `NODE_ENV=production`
+---
 
-3. Deploy:
+## 🌍 Region-Agnostic Design
+
+Diagnostic data uses scientific terminology. Client agents add regional context.
+
+**Architecture:**
+```
+Image → AgriVision (diagnosis_only) → Agent Builder → Region-specific advice
+```
+
+**Example**: Same diagnosis, different regions:
+- Kenya: "Use Neem oil from local agro-dealer"
+- India: "Apply Bt from Krishi Bhawan"
+- USA: "Use recommended Bt from ag store"
+
+---
+
+## 📦 Deploy to Railway
+
+1. Push to GitHub
+2. Create project on railway.app from GitHub repo
+3. Set environment variables:
+   - GEMINI_API_KEY
+   - ADVISORY_MODE=diagnosis_only
+   - OUTPUT_FORMAT=structured
+4. Deploy automatically
+5. Test: `curl https://your-app.up.railway.app/health`
+
+---
+
+## 🔗 OpenAI Agent Builder Integration
+
+1. Add MCP connection:
+   - URL: `https://your-app.up.railway.app/mcp`
+   - Type: StreamableHTTP
+
+2. System Prompt:
+```markdown
+When users share images, use `diagnose_plant_disease` tool.
+Tool returns diagnostic data only.
+YOU must generate region-specific treatment advice.
+```
+
+---
+
+## 🧪 Testing
+
 ```bash
-railway up
+node test-diagnosis.js /path/to/image.jpg
 ```
 
-### Other Platforms
+---
 
-Compatible with any platform supporting Node.js:
-- Vercel
-- Render
-- Fly.io
-- Heroku
-- Digital Ocean App Platform
+## 📄 License
 
-## Development Guidelines
+MIT - Built with ❤️ by Digital Green Foundation
 
-### Adding New Features
+---
 
-1. **New crop support**: Add to `SUPPORTED_CROPS` array
-2. **Enhanced diagnosis**: Modify Gemini prompt in tool handler
-3. **Additional tools**: Use `server.tool()` to add new MCP tools
-
-### Testing with Sample Images
-
-Create a test script to send base64 images:
-
-```typescript
-// test-diagnosis.ts
-const fs = require('fs');
-const imageBuffer = fs.readFileSync('plant.jpg');
-const base64Image = imageBuffer.toString('base64');
-const dataURI = `data:image/jpeg;base64,${base64Image}`;
-
-// Send to MCP endpoint via Agent Builder or direct MCP client
-```
-
-## Troubleshooting
-
-**Tool not working:**
-- Check `GEMINI_API_KEY` is set correctly
-- Verify image is valid base64 with proper data URI format
-- Check image size is under 5MB
-- Review Railway logs for errors
-
-**Low accuracy:**
-- Ensure image clearly shows affected plant parts
-- Provide crop type parameter for better context
-- Use high-resolution images
-- Capture close-ups of symptoms
-
-**Quota errors:**
-- Check Gemini API quota limits
-- Upgrade to paid tier if needed
-- Implement rate limiting if necessary
-
-## License
-
-MIT
-
-## Related Projects
-
-- **gap-mcp-server**: Weather and farming advisory MCP server
-- **gap-chat-widget**: FarmerChat UI with ChatKit integration
-
-## Support
-
-For issues and questions, contact Digital Green Foundation or open an issue in the repository.
+**Support**: GitHub Issues or support@digitalgreen.org
