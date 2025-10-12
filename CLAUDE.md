@@ -80,7 +80,7 @@ This is a **configurable plant health diagnosis service** that:
 
 ### src/index.ts (Main Server)
 - Express.js server with MCP StreamableHTTP transport
-- One MCP tool: `diagnose_plant_disease`
+- One MCP tool: `diagnose_plant_health`
 - Google Gemini vision model integration (configurable via GEMINI_IMAGE_MODEL)
 - Configurable advisory mode (ADVISORY_MODE)
 - Configurable output format (OUTPUT_FORMAT)
@@ -113,7 +113,7 @@ node test-diagnosis.js [path-to-image.jpg]
 curl http://localhost:3001/health
 ```
 
-## MCP Tool: diagnose_plant_disease
+## MCP Tool: diagnose_plant_health
 
 ### Parameters
 - **image** (required): Base64-encoded plant image
@@ -323,9 +323,9 @@ Available in `/Users/eagleisbatman/Desktop/S3_IMAGES/` folder.
 **Agent Builder System Prompt Should Include:**
 
 ```markdown
-## Plant Diagnosis Tool (AgriVision)
+## Plant Health Assessment Tool (AgriVision)
 
-When users share plant images, use the `diagnose_plant_disease` tool to get diagnostic information.
+When users share plant images, use the `diagnose_plant_health` tool to assess overall plant health.
 
 **Mode: diagnosis_only** - The tool returns ONLY diagnostic data:
 - Crop identification with scientific names
@@ -345,8 +345,8 @@ After receiving diagnostic data, YOU must:
 
 Example flow:
 1. User uploads plant image
-2. Call diagnose_plant_disease tool
-3. Receive: "Crop: Maize, Issue: Fusarium ear rot, Severity: Moderate"
+2. Call diagnose_plant_health tool
+3. Receive: "Crop: Maize, Health Status: Moderate Issue, Issue: Fusarium ear rot, Severity: Moderate"
 4. Generate response: "Your maize has ear rot caused by fungus. For Kenya, here's what to do..."
 ```
 
@@ -355,9 +355,9 @@ Example flow:
 **Agent Builder System Prompt Should Include:**
 
 ```markdown
-## Plant Diagnosis Tool (AgriVision)
+## Plant Health Assessment Tool (AgriVision)
 
-When users share plant images, use the `diagnose_plant_disease` tool to get comprehensive diagnostic and advisory information.
+When users share plant images, use the `diagnose_plant_health` tool to get comprehensive health assessment and advisory information.
 
 **Mode: full_advisory** - The tool returns:
 - Complete diagnostic data (crop ID, health, issues, symptoms)
@@ -476,7 +476,7 @@ Server information.
     "health": "/health",
     "mcp": "/mcp (POST)"
   },
-  "tools": ["diagnose_plant_disease"],
+  "tools": ["diagnose_plant_health"],
   "supportedCrops": 23
 }
 ```

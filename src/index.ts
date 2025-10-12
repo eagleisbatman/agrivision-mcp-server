@@ -83,7 +83,7 @@ app.get('/', (req, res) => {
       mcp: '/mcp (POST)'
     },
     tools: [
-      'diagnose_plant_disease'
+      'diagnose_plant_health'
     ],
     supportedCrops: SUPPORTED_CROPS.length
   });
@@ -102,13 +102,13 @@ app.post('/mcp', async (req, res) => {
       description: `AI-powered plant health diagnosis using Gemini ${GEMINI_IMAGE_MODEL}. Mode: ${ADVISORY_MODE}. ${ADVISORY_MODE === 'full_advisory' ? 'Returns diagnosis + treatment recommendations.' : 'Returns diagnostic data only.'}`
     });
 
-    // Tool: Diagnose Plant Disease
+    // Tool: Diagnose Plant Health
     const toolDescription = ADVISORY_MODE === 'full_advisory'
-      ? 'Analyzes plant images using AI vision to identify crop species, detect diseases/pests/deficiencies, and provide comprehensive diagnostic information WITH treatment recommendations. Returns: crop ID, health status, issues, symptoms, severity, AND treatment options (organic/chemical), application methods, preventive measures.'
-      : 'Analyzes plant images using AI vision to identify crop species, detect diseases/pests/deficiencies, and provide structured diagnostic information. Returns ONLY diagnostic data (crop ID, health status, issues, symptoms, severity). Does NOT provide treatment recommendations - that should be handled by the calling agent based on region.';
+      ? 'Analyzes plant images using AI vision to assess overall plant health. Identifies crop species, detects any issues (diseases/pests/deficiencies), and provides comprehensive diagnostic information WITH treatment recommendations. Returns: crop ID, health status (healthy or issues detected), symptoms, severity, AND treatment options (organic/chemical), application methods, preventive measures.'
+      : 'Analyzes plant images using AI vision to assess overall plant health. Identifies crop species and detects any issues (diseases/pests/deficiencies). Returns ONLY diagnostic data (crop ID, health status - healthy or issues detected, symptoms, severity). Does NOT provide treatment recommendations - that should be handled by the calling agent based on region.';
 
     server.tool(
-      'diagnose_plant_disease',
+      'diagnose_plant_health',
       toolDescription,
       {
         image: z.string().describe('Base64-encoded image of the plant (data:image/jpeg;base64,...). JPEG, PNG, or WebP. Max 5MB.'),
@@ -116,7 +116,7 @@ app.post('/mcp', async (req, res) => {
       },
       async ({ image, crop }) => {
         try {
-          console.log(`[MCP Tool] diagnose_plant_disease called${crop ? ` for crop: ${crop}` : ''}`);
+          console.log(`[MCP Tool] diagnose_plant_health called${crop ? ` for crop: ${crop}` : ''}`);
 
           // Check if Gemini is configured
           if (!genAI) {
@@ -309,7 +309,7 @@ IMPORTANT RULES:
           };
 
         } catch (error: any) {
-          console.error('[MCP Tool] Error in diagnose_plant_disease:', error.message);
+          console.error('[MCP Tool] Error in diagnose_plant_health:', error.message);
 
           if (error.message?.includes('API key')) {
             return {

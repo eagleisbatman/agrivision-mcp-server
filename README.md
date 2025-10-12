@@ -101,7 +101,7 @@ MCP protocol endpoint for tool calls.
 
 ---
 
-## 🛠️ MCP Tool: diagnose_plant_disease
+## 🛠️ MCP Tool: diagnose_plant_health
 
 ### Parameters
 - `image` (required): Base64-encoded image (`data:image/jpeg;base64,...`)
