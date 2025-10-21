@@ -183,8 +183,19 @@ Confidence: [High/Medium/Low]
 - Provide farmer-friendly recommendations
 - Adapt to local agricultural context and available products
 
-## Supported Crops (23)
+## Supported Crops (Dynamic from Agriculture API)
 
+**NEW**: AgriVision now fetches crops dynamically from the Vietnamese Agriculture API instead of using a hardcoded list.
+
+**Integration Details:**
+- On server startup, fetches all crops from `AGRICULTURE_API_URL`
+- Handles pagination to get all 36+ Vietnamese crops
+- Converts crop names to AgriVision format (lowercase with underscores)
+  - Example: "Bean (Green)" → "bean_green", "Coffee" → "coffee"
+- If Agriculture API is unavailable, falls back to hardcoded list (23 crops)
+- Logs success/failure at startup for monitoring
+
+**Fallback Crops (23)** - Used if Agriculture API is unavailable:
 **Cereals:** maize, wheat, rice, sorghum, millet
 **Legumes:** beans, cowpea, pigeon_pea, groundnut
 **Roots:** cassava, sweet_potato, potato

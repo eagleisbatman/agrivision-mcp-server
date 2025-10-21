@@ -32,6 +32,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image-preview';
 const ADVISORY_MODE = process.env.ADVISORY_MODE || 'diagnosis_only'; // diagnosis_only | full_advisory
 const OUTPUT_FORMAT = process.env.OUTPUT_FORMAT || 'structured'; // structured | text
+const AGRICULTURE_API_URL = process.env.AGRICULTURE_API_URL || 'https://nong-tri-agriculture-api.up.railway.app';
 const PORT = process.env.PORT || 3001;
 
 // Warn if token is missing
@@ -43,14 +44,78 @@ if (!GEMINI_API_KEY) {
 // Initialize Gemini AI
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
-// Supported crops
-const SUPPORTED_CROPS = [
+// Fallback supported crops (used if Agriculture API is unavailable)
+const FALLBACK_CROPS = [
   'maize', 'wheat', 'rice', 'sorghum', 'millet',
   'beans', 'cowpea', 'pigeon_pea', 'groundnut',
   'cassava', 'sweet_potato', 'potato',
   'tomato', 'cabbage', 'kale', 'onion', 'vegetables',
   'tea', 'coffee', 'sugarcane', 'banana', 'sunflower', 'cotton'
 ] as const;
+
+// Dynamic supported crops (fetched from Agriculture API)
+let SUPPORTED_CROPS: readonly string[] = FALLBACK_CROPS;
+
+/**
+ * Fetch all crops from the Agriculture API
+ * Handles pagination to get all 36+ Vietnamese crops
+ */
+async function fetchCropsFromAgricultureAPI(): Promise<string[]> {
+  try {
+    console.log('[Agriculture API] Fetching crops from:', AGRICULTURE_API_URL);
+
+    const crops: string[] = [];
+    let page = 1;
+    let hasMorePages = true;
+
+    while (hasMorePages) {
+      const response = await fetch(`${AGRICULTURE_API_URL}/api/crops?page=${page}&limit=50`);
+
+      if (!response.ok) {
+        throw new Error(`Agriculture API returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success || !Array.isArray(data.data)) {
+        throw new Error('Invalid response format from Agriculture API');
+      }
+
+      // Convert crop names to AgriVision format (lowercase with underscores)
+      const pageCrops = data.data.map((crop: any) =>
+        crop.name
+          .toLowerCase()
+          .replace(/\s+/g, '_')        // Replace spaces with underscores
+          .replace(/[()]/g, '')        // Remove parentheses
+      );
+
+      crops.push(...pageCrops);
+
+      // Check if there are more pages
+      if (data.pagination && data.pagination.page < data.pagination.totalPages) {
+        page++;
+      } else {
+        hasMorePages = false;
+      }
+    }
+
+    console.log(`[Agriculture API] ✅ Successfully fetched ${crops.length} crops`);
+    console.log('[Agriculture API] Crops:', crops.slice(0, 10).join(', '), '...');
+
+    return crops;
+
+  } catch (error: any) {
+    console.error('[Agriculture API] ❌ Failed to fetch crops:', error.message);
+    console.error('[Agriculture API] Falling back to hardcoded crop list');
+    return [...FALLBACK_CROPS];
+  }
+}
+
+// Initialize crops on startup
+(async () => {
+  const fetchedCrops = await fetchCropsFromAgricultureAPI();
+  SUPPORTED_CROPS = fetchedCrops;
+})();
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -107,12 +172,17 @@ app.post('/mcp', async (req, res) => {
       ? 'Analyzes plant images using AI vision to assess overall plant health. Identifies crop species, detects any issues (diseases/pests/deficiencies), and provides comprehensive diagnostic information WITH treatment recommendations. Returns: crop ID, health status (healthy or issues detected), symptoms, severity, AND treatment options (organic/chemical), application methods, preventive measures.'
       : 'Analyzes plant images using AI vision to assess overall plant health. Identifies crop species and detects any issues (diseases/pests/deficiencies). Returns ONLY diagnostic data (crop ID, health status - healthy or issues detected, symptoms, severity). Does NOT provide treatment recommendations - that should be handled by the calling agent based on region.';
 
+    // Build crop enum dynamically from current SUPPORTED_CROPS
+    const cropEnum = SUPPORTED_CROPS.length > 0
+      ? z.enum(SUPPORTED_CROPS as [string, ...string[]])
+      : z.string();
+
     server.tool(
       'diagnose_plant_health',
       toolDescription,
       {
         image: z.string().describe('Base64-encoded image of the plant (data:image/jpeg;base64,...). JPEG, PNG, or WebP. Max 5MB.'),
-        crop: z.enum(SUPPORTED_CROPS).optional().describe('Optional: Expected crop type to verify against image. If provided, tool will validate if image matches. Supported: maize, wheat, rice, beans, vegetables, tea, coffee, etc.')
+        crop: cropEnum.optional().describe(`Optional: Expected crop type to verify against image. If provided, tool will validate if image matches. Supported: ${SUPPORTED_CROPS.slice(0, 8).join(', ')}, etc. (${SUPPORTED_CROPS.length} crops total from Vietnamese Agriculture API)`)
       },
       async ({ image, crop }) => {
         try {
