@@ -62,14 +62,19 @@ let SUPPORTED_CROPS: readonly string[] = FALLBACK_CROPS;
  */
 async function fetchCropsFromAgricultureAPI(): Promise<string[]> {
   try {
-    console.log('[Agriculture API] Fetching crops from:', AGRICULTURE_API_URL);
+    // Ensure URL has protocol
+    const apiUrl = AGRICULTURE_API_URL.startsWith('http')
+      ? AGRICULTURE_API_URL
+      : `https://${AGRICULTURE_API_URL}`;
+
+    console.log('[Agriculture API] Fetching crops from:', apiUrl);
 
     const crops: string[] = [];
     let page = 1;
     let hasMorePages = true;
 
     while (hasMorePages) {
-      const response = await fetch(`${AGRICULTURE_API_URL}/api/crops?page=${page}&limit=50`);
+      const response = await fetch(`${apiUrl}/api/crops?page=${page}&limit=50`);
 
       if (!response.ok) {
         throw new Error(`Agriculture API returned status ${response.status}`);
