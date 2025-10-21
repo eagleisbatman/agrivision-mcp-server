@@ -75,7 +75,7 @@ async function fetchCropsFromAgricultureAPI(): Promise<string[]> {
         throw new Error(`Agriculture API returned status ${response.status}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
 
       if (!data.success || !Array.isArray(data.data)) {
         throw new Error('Invalid response format from Agriculture API');
